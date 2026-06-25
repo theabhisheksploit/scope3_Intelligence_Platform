@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scope3 Intelligence Platform</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f8f7f4;--surface:#ffffff;--surface2:#f1efe8;--border:#e2e0d8;--border2:#cccac0;
+  --text:#1a1a18;--text2:#6b6960;--text3:#9b9890;
+  --green:#0f6e56;--green-bg:#e1f5ee;--green-mid:#1d9e75;
+  --amber:#854f0b;--amber-bg:#faeeda;--amber-mid:#ef9f27;
+  --red:#a32d2d;--red-bg:#fcebeb;--red-mid:#e24b4a;
+  --blue:#185fa5;--blue-bg:#e6f1fb;--blue-mid:#378add;
+  --purple:#534ab7;--purple-bg:#eeedfe;
+  --teal:#0f6e56;--teal-bg:#e1f5ee;
+  --radius:8px;--radius-lg:12px;
+  --hdr:52px;--side:220px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:14px;height:100vh;overflow:hidden}
+.shell{display:flex;flex-direction:column;height:100vh}
+
+/* HEADER */
+.hdr{height:var(--hdr);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0;z-index:100}
+.hdr-logo{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600;color:var(--text)}
+.hdr-logo i{color:var(--green-mid);font-size:18px}
+.hdr-divider{width:1px;height:20px;background:var(--border);margin:0 4px}
+.hdr-tag{font-size:11px;color:var(--text2);background:var(--surface2);padding:3px 10px;border-radius:20px;border:1px solid var(--border)}
+.hdr-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.pill{font-size:11px;padding:4px 10px;border-radius:20px;font-weight:500;display:inline-flex;align-items:center;gap:4px}
+.pill-green{background:var(--green-bg);color:var(--green)}
+.pill-amber{background:var(--amber-bg);color:var(--amber)}
+.pill-blue{background:var(--blue-bg);color:var(--blue)}
+.btn-popout{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:6px 12px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px;color:var(--text2);transition:.15s}
+.btn-popout:hover{background:var(--surface2);color:var(--text)}
+
+/* BODY */
+.body{display:flex;flex:1;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:var(--side);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.sb-group{padding:10px 0}
+.sb-label{font-size:10px;font-weight:600;color:var(--text3);padding:0 16px 5px;text-transform:uppercase;letter-spacing:.7px}
+.sb-item{display:flex;align-items:center;gap:9px;padding:8px 16px;cursor:pointer;font-size:13px;color:var(--text2);border-left:2.5px solid transparent;transition:.12s;white-space:nowrap}
+.sb-item:hover{color:var(--text);background:var(--bg)}
+.sb-item.active{color:var(--text);background:var(--bg);border-left-color:var(--text);font-weight:500}
+.sb-item i{font-size:15px;flex-shrink:0}
+.sb-badge{margin-left:auto;font-size:10px;min-width:18px;height:18px;border-radius:9px;padding:0 5px;display:flex;align-items:center;justify-content:center;font-weight:600}
+.sb-badge.red{background:var(--red-bg);color:var(--red)}
+.sb-badge.gray{background:var(--surface2);color:var(--text2)}
+.sb-badge.green{background:var(--green-bg);color:var(--green)}
+.sb-sep{height:1px;background:var(--border);margin:4px 12px}
+.sb-step{display:flex;align-items:center;gap:9px;padding:7px 16px;font-size:12px;color:var(--text3)}
+.sb-step-num{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0}
+.sb-step.done .sb-step-num{background:var(--green-mid);border-color:var(--green-mid);color:#fff}
+.sb-step.active-step .sb-step-num{background:var(--blue-mid);border-color:var(--blue-mid);color:#fff}
+
+/* MAIN */
+.main{flex:1;overflow-y:auto;background:var(--bg)}
+.page{display:none;padding:24px;max-width:1200px}
+.page.active{display:block}
+
+/* PAGE HEADER */
+.pg-hdr{margin-bottom:20px}
+.pg-title{font-size:18px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
+.pg-sub{font-size:13px;color:var(--text2);margin-top:4px;line-height:1.5}
+.pg-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:14px}
+.card-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+
+/* KPI */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:18px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px}
+.kpi-lbl{font-size:11px;color:var(--text2);margin-bottom:6px}
+.kpi-val{font-size:22px;font-weight:600;color:var(--text);line-height:1}
+.kpi-ch{font-size:11px;margin-top:4px}
+.ch-up{color:var(--red-mid)} .ch-dn{color:var(--green-mid)} .ch-neu{color:var(--text2)}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;font-size:11px;padding:3px 8px;border-radius:var(--radius);font-weight:500}
+.b-green{background:var(--green-bg);color:var(--green)}
+.b-amber{background:var(--amber-bg);color:var(--amber)}
+.b-red{background:var(--red-bg);color:var(--red)}
+.b-blue{background:var(--blue-bg);color:var(--blue)}
+.b-gray{background:var(--surface2);color:var(--text2)}
+.b-purple{background:var(--purple-bg);color:var(--purple)}
+.conf{font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600}
+.c-hi{background:var(--green-bg);color:var(--green)}
+.c-md{background:var(--amber-bg);color:var(--amber)}
+.c-lo{background:var(--red-bg);color:var(--red)}
+
+/* BUTTONS */
+.btn{font-size:12px;padding:7px 14px;border-radius:var(--radius);border:1px solid var(--border2);cursor:pointer;background:var(--surface);color:var(--text);font-family:inherit;transition:.12s;display:inline-flex;align-items:center;gap:5px}
+.btn:hover{background:var(--surface2)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-primary{background:var(--text);color:var(--surface);border-color:var(--text)}
+.btn-primary:hover{opacity:.88;background:var(--text)}
+.btn-green{background:var(--green-mid);color:#fff;border-color:var(--green-mid)}
+.btn-green:hover{opacity:.88}
+.chip{font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid var(--border2);cursor:pointer;background:var(--surface2);color:var(--text2);display:inline-block;transition:.12s}
+.chip:hover{background:var(--surface);color:var(--text);border-color:var(--border2)}
+.btn-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}
+
+/* TABLES */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:8px 10px;color:var(--text2);font-weight:600;border-bottom:1px solid var(--border);font-size:11px;white-space:nowrap;background:var(--surface2)}
+td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--bg)}
+
+/* INPUTS */
+textarea,input[type=text],select{font-family:inherit;font-size:13px;color:var(--text);background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:9px 12px;width:100%}
+textarea{resize:vertical}
+textarea:focus,input:focus,select:focus{outline:none;border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1)}
+select{cursor:pointer}
+
+/* UPLOAD ZONE */
+.upload-zone{border:2px dashed var(--border2);border-radius:var(--radius-lg);padding:32px 24px;text-align:center;cursor:pointer;transition:.2s;background:var(--surface)}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--blue-mid);background:var(--blue-bg)}
+.upload-zone.has-file{border-color:var(--green-mid);border-style:solid;background:var(--green-bg)}
+.upload-icon{font-size:36px;color:var(--text3);margin-bottom:10px}
+.upload-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px}
+.upload-sub{font-size:12px;color:var(--text2)}
+.format-chips{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.fmt-chip{font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid var(--border2);color:var(--text2);background:var(--surface)}
+
+/* STEPS */
+.step-bar{display:flex;align-items:center;margin-bottom:24px;gap:0}
+.step-item{display:flex;align-items:center;gap:8px;flex:1}
+.step-num{width:28px;height:28px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;background:var(--surface);color:var(--text2)}
+.step-txt{font-size:12px;color:var(--text2)}
+.step-line{flex:1;height:1px;background:var(--border);margin:0 8px}
+.step-item.done .step-num{background:var(--green-mid);border-color:var(--green-mid);color:#fff}
+.step-item.done .step-txt{color:var(--green)}
+.step-item.active-s .step-num{background:var(--blue-mid);border-color:var(--blue-mid);color:#fff}
+.step-item.active-s .step-txt{color:var(--blue);font-weight:500}
+.step-line.done{background:var(--green-mid)}
+
+/* LOCKED STATE */
+.locked-overlay{background:var(--surface2);border:1px dashed var(--border2);border-radius:var(--radius-lg);padding:40px 24px;text-align:center;color:var(--text2)}
+.locked-overlay i{font-size:32px;display:block;margin-bottom:10px;color:var(--border2)}
+
+/* MAPPING TABLE editable */
+.map-select{font-size:11px;padding:3px 6px;border-radius:6px;border:1px solid var(--border2);background:var(--surface);color:var(--text);cursor:pointer;max-width:180px}
+.map-row-flag{background:#fff8f8}
+.map-row-med{background:#fffbf0}
+
+/* BAR ROWS */
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.bar-lbl{font-size:12px;color:var(--text2);width:140px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .6s}
+.bar-val{font-size:12px;color:var(--text);width:56px;text-align:right;font-weight:500}
+
+/* EF REF MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999;display:none;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface);border-radius:var(--radius-lg);width:720px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal-hdr{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-title{font-size:15px;font-weight:600}
+.modal-body{overflow-y:auto;padding:20px}
+.modal-close{background:none;border:none;cursor:pointer;font-size:20px;color:var(--text2);padding:2px}
+
+/* CHAT */
+.chat-wrap{display:flex;flex-direction:column;gap:10px;max-height:320px;overflow-y:auto;margin-bottom:12px;padding-right:4px}
+.msg{padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.6;max-width:88%}
+.msg.user{background:var(--blue-bg);color:var(--blue);align-self:flex-end;border-radius:12px 12px 4px 12px;margin-left:auto}
+.msg.ai{background:var(--surface2);color:var(--text);align-self:flex-start;border-radius:12px 12px 12px 4px}
+.msg.typing{color:var(--text2);font-style:italic}
+.dots span{display:inline-block;animation:blink 1.2s infinite}
+.dots span:nth-child(2){animation-delay:.2s}
+.dots span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+
+/* SCENARIO */
+.scen-card{border:1px solid var(--border2);border-radius:var(--radius-lg);padding:12px 14px;margin-bottom:10px;cursor:pointer;transition:.15s}
+.scen-card:hover{border-color:var(--blue-mid)}
+.scen-card.sel{border-color:var(--blue-mid);background:var(--blue-bg)}
+
+/* REPORTING */
+.rep-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;text-align:center}
+.rep-icon{font-size:30px;margin-bottom:8px}
+.rep-name{font-size:14px;font-weight:600;margin-bottom:4px}
+.rep-sub{font-size:11px;color:var(--text2);margin-bottom:12px;line-height:1.5}
+
+/* BENCH */
+.bench-row{display:flex;align-items:center;gap:0;height:32px;border-radius:6px;overflow:hidden;margin-bottom:8px}
+.bench-seg{height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;padding:0 6px}
+
+/* EF TABLE */
+.ef-source-row{border-bottom:1px solid var(--border);padding:10px 0}
+.ef-source-row:last-child{border-bottom:none}
+.ef-src-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px}
+.ef-src-desc{font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:4px}
+.ef-src-tags{display:flex;gap:4px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-logo"><i class="ti ti-leaf"></i>Scope3 Intelligence</div>
+  <div class="hdr-divider"></div>
+  <div class="hdr-tag">GHG Protocol Corporate Value Chain Standard · Technical Guidance 2023</div>
+  <div class="hdr-right">
+    <span class="pill pill-green"><i class="ti ti-check" style="font-size:11px"></i>GHG Protocol Aligned</span>
+    <span class="pill pill-amber">FY 2024 · Draft</span>
+    <button class="btn-popout" onclick="openEFModal()"><i class="ti ti-database" style="font-size:13px"></i>EF References</button>
+    <button class="btn-popout" onclick="popOut()"><i class="ti ti-external-link" style="font-size:13px"></i>Pop out</button>
+  </div>
+</div>
+
+<div class="body">
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sb-group">
+    <div class="sb-label">Workflow</div>
+    <div class="sb-item active" id="sb-upload" onclick="nav('upload')"><i class="ti ti-upload"></i>1. Upload Data<span class="sb-badge red" id="badge-upload">●</span></div>
+    <div class="sb-item" id="sb-map" onclick="nav('map')"><i class="ti ti-tags"></i>2. Map &amp; Review<span class="sb-badge gray" id="badge-map">—</span></div>
+    <div class="sb-item" id="sb-calc" onclick="nav('calc')"><i class="ti ti-calculator"></i>3. Calculate<span class="sb-badge gray" id="badge-calc">—</span></div>
+  </div>
+  <div class="sb-sep"></div>
+  <div class="sb-group">
+    <div class="sb-label">Results</div>
+    <div class="sb-item" id="sb-dashboard" onclick="nav('dashboard')"><i class="ti ti-dashboard"></i>Dashboard</div>
+  </div>
+  <div class="sb-sep"></div>
+  <div class="sb-group">
+    <div class="sb-label">Intelligence</div>
+    <div class="sb-item" id="sb-advisor" onclick="nav('advisor')"><i class="ti ti-robot"></i>AI Carbon Advisor</div>
+  </div>
+  <div style="margin-top:auto;padding:12px 16px;font-size:11px;color:var(--text3);border-top:1px solid var(--border)">
+    <div style="font-weight:600;margin-bottom:4px">EF Sources</div>
+    <div>DEFRA 2023 · GHG Protocol DB</div>
+    <div>Exiobase 2021 · IEA 2023</div>
+    <div>IPCC AR6 GWP100</div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- ═══ UPLOAD ═══ -->
+<div id="pg-upload" class="page active">
+  <div class="pg-hdr">
+    <div class="pg-title"><i class="ti ti-upload" style="font-size:18px;color:var(--blue-mid)"></i>Step 1 — Upload Data</div>
+    <div class="pg-sub">Upload procurement, spend, invoice, or activity data in any format. The AI engine will extract and normalise each line item before GHG Protocol classification.</div>
+  </div>
+
+  <div class="step-bar">
+    <div class="step-item active-s"><div class="step-num">1</div><div class="step-txt">Upload data</div></div>
+    <div class="step-line"></div>
+    <div class="step-item" id="step2"><div class="step-num">2</div><div class="step-txt">Map to GHG categories</div></div>
+    <div class="step-line" id="line2"></div>
+    <div class="step-item" id="step3"><div class="step-num">3</div><div class="step-txt">Calculate emissions</div></div>
+    <div class="step-line" id="line3"></div>
+    <div class="step-item" id="step4"><div class="step-num">4</div><div class="step-txt">View results</div></div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-file-upload" style="color:var(--blue-mid)"></i>Upload file or paste data</div>
+        <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
+          <div class="upload-icon"><i class="ti ti-cloud-upload"></i></div>
+          <div class="upload-title">Drop file here or click to browse</div>
+          <div class="upload-sub">Accepts CSV, Excel (.xlsx), PDF invoices, or paste text below</div>
+          <div class="format-chips">
+            <span class="fmt-chip"><i class="ti ti-file-spreadsheet"></i> CSV</span>
+            <span class="fmt-chip"><i class="ti ti-file-excel"></i> XLSX</span>
+            <span class="fmt-chip"><i class="ti ti-file-text"></i> PDF</span>
+            <span class="fmt-chip"><i class="ti ti-clipboard-text"></i> Paste</span>
+          </div>
+        </div>
+        <input type="file" id="file-input" style="display:none" accept=".csv,.xlsx,.pdf,.txt" onchange="handleFileSelect(event)">
+        <div style="margin:12px 0;text-align:center;font-size:12px;color:var(--text3)">— or paste / type directly —</div>
+        <textarea id="paste-input" rows="5" placeholder="Paste ERP export, spend data, or free text:&#10;&#10;e.g.&#10;Steel coils, 45 tonnes, Tata Steel, Maharashtra, ₹18,50,000&#10;Air freight, 1200 kg, Shenzhen to Mumbai&#10;Business travel, London to Delhi, 3 employees, economy return&#10;Cloud hosting AWS, ₹20,00,000/year&#10;Office waste, 2 tonnes, landfill, Chennai"></textarea>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="processInput()"><i class="ti ti-wand"></i>Process &amp; Extract</button>
+          <div class="chip" onclick="loadDemo('procurement')">Demo: procurement CSV</div>
+          <div class="chip" onclick="loadDemo('logistics')">Demo: logistics data</div>
+        </div>
+        <div id="upload-status" style="margin-top:10px"></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-info-circle" style="color:var(--blue-mid)"></i>What to upload</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.7">
+          <div style="margin-bottom:8px"><strong style="color:var(--text)">Procurement / spend data</strong><br>ERP exports, purchase orders, invoices with supplier name, material/service, quantity, unit, spend value</div>
+          <div style="margin-bottom:8px"><strong style="color:var(--text)">Logistics data</strong><br>Freight invoices, transport records with origin, destination, mode, weight/volume</div>
+          <div style="margin-bottom:8px"><strong style="color:var(--text)">Travel &amp; expense reports</strong><br>Business travel bookings with route, class, employee count</div>
+          <div><strong style="color:var(--text)">Operations data</strong><br>Utility bills, waste manifests, energy consumption records</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-shield-check" style="color:var(--green-mid)"></i>GHG Protocol compliance</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.7">
+          The platform classifies data against all <strong>15 Scope 3 categories</strong> per the GHG Protocol Corporate Value Chain Standard (2011) and applies the appropriate calculation method per the <strong>Technical Guidance for Calculating Scope 3 Emissions</strong>.<br><br>
+          Emission factors are sourced from <strong>DEFRA 2023, GHG Protocol EF Database, Exiobase EEIO 2021, IEA 2023</strong>, converted using <strong>IPCC AR6 GWP100</strong>.
+          <button class="btn" style="margin-top:8px;font-size:11px;width:100%;justify-content:center" onclick="openEFModal()"><i class="ti ti-database"></i>View full EF reference library</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="extracted-preview" style="display:none">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-table" style="color:var(--green-mid)"></i>Extracted records — review before mapping</div>
+      <div class="tbl-wrap"><table id="extracted-table">
+        <thead><tr><th>#</th><th>Description</th><th>Supplier / Source</th><th>Qty</th><th>Unit</th><th>Spend</th><th>Country</th></tr></thead>
+        <tbody id="extracted-tbody"></tbody>
+      </table></div>
+      <div class="btn-row" style="margin-top:12px">
+        <button class="btn btn-green" onclick="goToMapping()"><i class="ti ti-arrow-right"></i>Proceed to GHG Mapping →</button>
+        <span style="font-size:12px;color:var(--text2)" id="row-count"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MAP ═══ -->
+<div id="pg-map" class="page">
+  <div class="pg-hdr">
+    <div class="pg-title"><i class="ti ti-tags" style="font-size:18px;color:var(--blue-mid)"></i>Step 2 — GHG Protocol Mapping &amp; Review</div>
+    <div class="pg-sub">Each record has been classified against the GHG Protocol 15 Scope 3 categories. Review, correct any mappings, then confirm to proceed to calculation.</div>
+  </div>
+  <div id="map-locked" class="locked-overlay"><i class="ti ti-lock"></i>Upload and process data in Step 1 first.</div>
+  <div id="map-content" style="display:none">
+    <div class="card" style="padding:12px 16px;margin-bottom:14px;background:var(--amber-bg);border-color:#f5c4b3">
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--amber)">
+        <i class="ti ti-alert-triangle"></i>
+        <span id="flag-summary">Records flagged for review are highlighted. Low confidence (&lt;70%) requires manual confirmation before calculating.</span>
+      </div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Description</th><th>GHG Category</th><th>Method (GHG Protocol hierarchy)</th><th>Confidence</th><th>How to improve</th><th>Status</th></tr></thead>
+          <tbody id="map-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="btn-row" style="margin-top:4px">
+      <button class="btn btn-green" onclick="goToCalc()"><i class="ti ti-calculator"></i>Confirm &amp; Calculate Emissions →</button>
+      <button class="btn" onclick="nav('upload')"><i class="ti ti-arrow-left"></i>Back</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CALC ═══ -->
+<div id="pg-calc" class="page">
+  <div class="pg-hdr">
+    <div class="pg-title"><i class="ti ti-calculator" style="font-size:18px;color:var(--blue-mid)"></i>Step 3 — Emission Calculations</div>
+    <div class="pg-sub">Emissions calculated per GHG Protocol Technical Guidance formulas. Each record shows the method applied, emission factor source, and full calculation trail.</div>
+  </div>
+  <div id="calc-locked" class="locked-overlay"><i class="ti ti-lock"></i>Complete Steps 1 &amp; 2 first.</div>
+  <div id="calc-content" style="display:none">
+    <div class="kpi-row" id="calc-kpis"></div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Description</th><th>GHG Category</th><th>Method</th><th>Formula applied</th><th>EF &amp; Source</th><th>tCO₂e</th><th>Confidence</th></tr></thead>
+          <tbody id="calc-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="btn-row" style="margin-top:4px">
+      <button class="btn btn-green" onclick="unlockResults()"><i class="ti ti-chart-bar"></i>View Results Dashboard →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DASHBOARD ═══ -->
+<div id="pg-dashboard" class="page">
+  <div class="pg-hdr">
+    <div class="pg-title"><i class="ti ti-dashboard" style="font-size:18px;color:var(--blue-mid)"></i>Dashboard</div>
+    <div class="pg-sub">FY 2024 Scope 3 Inventory · GHG Protocol Corporate Value Chain Standard</div>
+  </div>
+  <div id="dash-locked" class="locked-overlay"><i class="ti ti-lock"></i>Complete the 3-step data workflow to unlock results.</div>
+  <div id="dash-content" style="display:none">
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-lbl">Total Scope 3</div><div class="kpi-val" id="d-total">—</div><div class="kpi-ch ch-neu">tCO₂e</div></div>
+      <div class="kpi"><div class="kpi-lbl">Largest category</div><div class="kpi-val" id="d-top-cat" style="font-size:14px">—</div><div class="kpi-ch ch-up" id="d-top-pct"></div></div>
+      <div class="kpi"><div class="kpi-lbl">Carbon intensity</div><div class="kpi-val" id="d-intensity">—</div><div class="kpi-ch ch-neu">tCO₂e / ₹Cr</div></div>
+      <div class="kpi"><div class="kpi-lbl">Records processed</div><div class="kpi-val" id="d-records">—</div><div class="kpi-ch ch-neu">line items</div></div>
+      <div class="kpi"><div class="kpi-lbl">Activity-based data</div><div class="kpi-val" id="d-quality">—</div><div class="kpi-ch ch-neu">% of total</div></div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-chart-bar" style="color:var(--blue-mid)"></i>Emissions by GHG Protocol category</div>
+        <div id="dash-cat-bars"></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-building-factory" style="color:var(--blue-mid)"></i>Emissions by supplier</div>
+        <div id="dash-sup-bars"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="ti ti-timeline" style="color:var(--blue-mid)"></i>Upstream vs downstream breakdown</div>
+      <div style="position:relative;height:200px"><canvas id="wfChart" role="img" aria-label="Emissions breakdown by Scope 3 category"></canvas></div>
+      <div id="wf-legend" style="display:flex;gap:20px;flex-wrap:wrap;margin-top:10px;padding-top:8px;border-top:1px solid var(--border)"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ADVISOR ═══ -->
+<div id="pg-advisor" class="page">
+  <div class="pg-hdr">
+    <div class="pg-title"><i class="ti ti-robot" style="font-size:18px;color:var(--blue-mid)"></i>AI Carbon Advisor</div>
+    <div class="pg-sub">Powered by Claude · Grounded in GHG Protocol Technical Guidance · Context-aware of your uploaded inventory</div>
+  </div>
+  <div class="two-col">
+    <div class="card" style="display:flex;flex-direction:column;min-height:480px">
+      <div class="card-title"><i class="ti ti-message" style="color:var(--blue-mid)"></i>Ask the advisor</div>
+      <div class="chat-wrap" id="chat-wrap"></div>
+      <div style="margin-top:auto">
+        <div class="btn-row" id="advisor-chips" style="margin-bottom:8px">
+          <div class="chip" onclick="askQ('What is the biggest emissions hotspot in my uploaded data and how can I reduce it?')">Top hotspot</div>
+          <div class="chip" onclick="askQ('Which records are using spend-based methods and how can I upgrade them?')">Data quality</div>
+          <div class="chip" onclick="askQ('What are the 3 quickest emission reduction actions based on my data?')">Quick wins</div>
+          <div class="chip" onclick="askQ('Which suppliers should I prioritise for GHG data collection?')">Supplier priority</div>
+        </div>
+        <textarea id="advisor-q" rows="2" placeholder="Ask about methodology, reduction actions, supplier engagement, reporting…"></textarea>
+        <div class="btn-row"><button class="btn btn-primary" onclick="sendMsg()"><i class="ti ti-send"></i>Send</button></div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-bulb" style="color:var(--amber-mid)"></i>Top reduction recommendations</div>
+        <div id="recs-list"><div style="font-size:12px;color:var(--text2);padding:12px 0">Upload and calculate data to see recommendations based on your inventory.</div></div>
+      </div>
+      <div class="card" style="margin-top:0">
+        <div class="card-title"><i class="ti ti-adjustments" style="color:var(--blue-mid)"></i>Scenario modelling</div>
+        <div id="scen-list"></div>
+        <div id="scen-result" style="margin-top:10px;font-size:12px;color:var(--text2)">Select scenarios above to model combined impact.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+</div>
+
+<!-- EF REFERENCE MODAL -->
+<div class="modal-bg" id="ef-modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title"><i class="ti ti-database" style="margin-right:6px;color:var(--blue-mid)"></i>Emission Factor Reference Library</div>
+      <button class="modal-close" onclick="closeEFModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:12px;color:var(--text2);margin-bottom:16px;line-height:1.6">All emission factors used in this platform are sourced from the databases below, as recommended by the GHG Protocol Technical Guidance for Calculating Scope 3 Emissions. Every calculation result in the platform is traceable to one of these sources.</p>
+
+      <div class="ef-source-row">
+        <div class="ef-src-name">UK DEFRA GHG Conversion Factors 2023</div>
+        <div class="ef-src-desc">Published annually by the UK Department for Environment, Food &amp; Rural Affairs. The most widely used secondary EF source for transport (Cat 4, 6), waste (Cat 5), and energy. Covers road, rail, air, sea transport; waste disposal by type; and fuel combustion. Life cycle (well-to-wheel) factors used for Scope 3 per GHG Protocol requirements.</div>
+        <div class="ef-src-tags"><span class="badge b-blue">Cat 4 Transport</span><span class="badge b-blue">Cat 6 Travel</span><span class="badge b-blue">Cat 5 Waste</span><span class="badge b-blue">Cat 3 Energy</span></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">URL: gov.uk/government/collections/government-conversion-factors-for-company-reporting · Updated annually</div>
+      </div>
+
+      <div class="ef-source-row">
+        <div class="ef-src-name">GHG Protocol Emission Factor Database</div>
+        <div class="ef-src-desc">Maintained by World Resources Institute / WBCSD. Cradle-to-gate process-based EFs for materials, metals, and manufactured goods. Primary source for Cat 1 average-data method (steel: 1.85 kgCO₂e/kg virgin, 0.46 recycled; aluminium: 8.24 kgCO₂e/kg). All EFs represent full upstream life cycle per GHG Protocol boundary requirements.</div>
+        <div class="ef-src-tags"><span class="badge b-green">Cat 1 PG&amp;S</span><span class="badge b-green">Cat 2 Capital</span></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">URL: ghgprotocol.org/Third-Party-Databases · Version 2022</div>
+      </div>
+
+      <div class="ef-source-row">
+        <div class="ef-src-name">Exiobase 3 — Environmentally-Extended Input-Output (EEIO) Database</div>
+        <div class="ef-src-desc">Multi-regional EEIO database covering 44 countries and 5 rest-of-world regions. Used exclusively as the spend-based (last-resort) method per GHG Protocol Fig 1.2 hierarchy when physical activity data is unavailable. Output: kgCO₂e per unit of monetary spend by sector. Limitation per GHG Protocol: broad sector averages, cannot distinguish intra-sector product differences, indicative only.</div>
+        <div class="ef-src-tags"><span class="badge b-amber">Cat 1 spend-based fallback</span><span class="badge b-amber">Cat 2 spend-based fallback</span></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">Exiobase 3.8.2 · 2021 edition · exiobase.eu</div>
+      </div>
+
+      <div class="ef-source-row">
+        <div class="ef-src-name">IEA Electricity Grid Emission Factors 2023</div>
+        <div class="ef-src-desc">International Energy Agency country-level grid emission factors for electricity generation. Used for Cat 3 (fuel and energy-related activities) upstream electricity emissions. India grid EF: 0.82 kgCO₂e/kWh (2023). Covers generation mix and T&amp;D losses per GHG Protocol scope 3 boundary for Cat 3.</div>
+        <div class="ef-src-tags"><span class="badge b-purple">Cat 3 Energy</span></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">IEA Emissions Factors 2023 · iea.org/data-and-statistics</div>
+      </div>
+
+      <div class="ef-source-row">
+        <div class="ef-src-name">IPCC AR6 GWP100 Values (2021)</div>
+        <div class="ef-src-desc">Global Warming Potential values from the IPCC Sixth Assessment Report, 100-year time horizon. Used to convert all non-CO₂ greenhouse gases to CO₂ equivalent. Key values: CH₄ = 27.9 (fossil), N₂O = 273, HFC-134a = 1,526. Replaces AR5 values per latest GHG Protocol guidance.</div>
+        <div class="ef-src-tags"><span class="badge b-gray">All categories — GWP conversion</span></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">IPCC AR6 WGI Chapter 7 Supplementary Material · 2021</div>
+      </div>
+
+      <div class="ef-source-row">
+        <div class="ef-src-name">ICAO Carbon Emissions Calculator</div>
+        <div class="ef-src-desc">International Civil Aviation Organization methodology for air transport emissions. Used for Cat 4 and Cat 6 air freight and business travel EFs by route and aircraft class. Includes Radiative Forcing Index (RFI = 1.9) applied to air travel per GHG Protocol recommendation for non-CO₂ climate effects at altitude.</div>
+        <div class="ef-src-tags"><span class="badge b-blue">Cat 4 Air freight</span><span class="badge b-blue">Cat 6 Air travel</span></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">ICAO Doc 9889 · icao.int/environmental-protection</div>
+      </div>
+
+      <div class="ef-source-row">
+        <div class="ef-src-name">EcoTransIT World / NTM</div>
+        <div class="ef-src-desc">Transport-specific emission factor databases cited in GHG Protocol Technical Guidance Table 4.2 for road, rail, and multimodal freight. Used as secondary source for truck and rail EFs where DEFRA does not cover specific vehicle types or non-UK routes.</div>
+        <div class="ef-src-tags"><span class="badge b-blue">Cat 4 Road/Rail</span></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">ecotransit.org · ntmcalc.se</div>
+      </div>
+
+      <div style="margin-top:16px;padding:12px;background:var(--surface2);border-radius:var(--radius);font-size:12px;color:var(--text2)">
+        <strong style="color:var(--text)">Important limitation:</strong> This platform currently embeds representative EF values from the above databases (last updated at platform build time). For production reporting, connect a live EF API (Climatiq, Sphera) to ensure factors are always current. GHG Protocol requires disclosure of EF source, year, and geography for each calculation — this is captured in the audit trail on the Reporting tab.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// ── STATE ──
+let state={uploaded:false,mapped:false,calculated:false,resultsUnlocked:false,rows:[],selectedScens:new Map()};
+
+// ── DEMO DATA ──
+const DEMO_PROCUREMENT=[
+  {desc:'Steel coils',supplier:'Tata Steel',qty:'45 t',unit:'tonnes',spend:'₹18,50,000',country:'India'},
+  {desc:'Aluminium sheets',supplier:'Hindalco',qty:'12 t',unit:'tonnes',spend:'₹9,60,000',country:'India'},
+  {desc:'Air freight Shenzhen→Mumbai',supplier:'DHL Express',qty:'1200 kg',unit:'kg',spend:'₹3,20,000',country:'China→India'},
+  {desc:'Business travel London→Delhi ×3',supplier:'British Airways',qty:'3 pax',unit:'pax',spend:'₹1,80,000',country:'UK→India'},
+  {desc:'Cloud hosting AWS India',supplier:'Amazon AWS',qty:'—',unit:'service',spend:'₹20,00,000',country:'India'},
+  {desc:'Office waste mixed landfill',supplier:'Ramky Enviro',qty:'2 t',unit:'tonnes',spend:'₹12,000',country:'India'},
+  {desc:'Packaging materials HDPE',supplier:'Uflex Ltd',qty:'8 t',unit:'tonnes',spend:'₹4,80,000',country:'India'},
+  {desc:'Diesel truck freight Mumbai→Delhi',supplier:'TCI Freight',qty:'15 t · 1400 km',unit:'tkm',spend:'₹2,40,000',country:'India'},
+];
+const DEMO_LOGISTICS=[
+  {desc:'Ocean freight China→India container',supplier:'Maersk Line',qty:'2000 TEU-km',unit:'TEU-km',spend:'₹8,40,000',country:'China→India'},
+  {desc:'Road freight refrigerated 500km',supplier:'Mahindra Logistics',qty:'5 t · 500 km',unit:'tkm',spend:'₹1,20,000',country:'India'},
+  {desc:'Air cargo express EU→India',supplier:'FedEx',qty:'800 kg',unit:'kg',spend:'₹2,10,000',country:'EU→India'},
+];
+
+const MAPPINGS=[
+  {cat:'Cat 1 — Purchased Goods & Services',method:'Average-data method',formula:'mass [kg] × EF [kgCO₂e/kg]',ef:'1.85 kgCO₂e/kg · GHG Protocol DB',tco2e:83.3,conf:96,stream:'up'},
+  {cat:'Cat 1 — Purchased Goods & Services',method:'Average-data method',formula:'mass [kg] × EF [kgCO₂e/kg]',ef:'8.24 kgCO₂e/kg · GHG Protocol DB',tco2e:98.9,conf:94,stream:'up'},
+  {cat:'Cat 4 — Upstream Transport',method:'Distance-based method',formula:'mass [t] × dist [km] × EF [kgCO₂e/tkm]',ef:'1.146 kgCO₂e/tkm · DEFRA 2023 air',tco2e:7.6,conf:91,stream:'up'},
+  {cat:'Cat 6 — Business Travel',method:'Distance-based + RFI',formula:'pax × dist [km] × EF × RFI 1.9',ef:'0.133 kgCO₂e/pkm · DEFRA 2023 · RFI=1.9',tco2e:10.2,conf:94,stream:'up'},
+  {cat:'Cat 1 — Purchased Goods & Services',method:'Spend-based (EEIO) — fallback',formula:'spend [₹] × EEIO EF [kgCO₂e/₹]',ef:'0.0016 kgCO₂e/₹ · Exiobase 2021 IT',tco2e:3.2,conf:74,stream:'up'},
+  {cat:'Cat 5 — Waste in Operations',method:'Waste-type method',formula:'mass [t] × disposal EF [kgCO₂e/t]',ef:'460 kgCO₂e/t · DEFRA 2023 mixed landfill',tco2e:0.9,conf:88,stream:'up'},
+  {cat:'Cat 1 — Purchased Goods & Services',method:'Average-data method',formula:'mass [kg] × EF [kgCO₂e/kg]',ef:'2.50 kgCO₂e/kg · GHG Protocol DB HDPE',tco2e:20.0,conf:89,stream:'up'},
+  {cat:'Cat 4 — Upstream Transport',method:'Distance-based method',formula:'mass [t] × dist [km] × EF [kgCO₂e/tkm]',ef:'0.062 kgCO₂e/tkm · DEFRA 2023 HGV',tco2e:13.0,conf:90,stream:'up'},
+];
+
+const CAT_OPTS=['Cat 1 — Purchased Goods & Services','Cat 2 — Capital Goods','Cat 3 — Fuel & Energy','Cat 4 — Upstream Transport','Cat 5 — Waste in Operations','Cat 6 — Business Travel','Cat 7 — Employee Commuting','Cat 8 — Upstream Leased Assets','Cat 9 — Downstream Transport','Cat 10 — Processing of Sold Products','Cat 11 — Use of Sold Products','Cat 12 — End-of-Life Treatment','Cat 13 — Downstream Leased Assets','Cat 14 — Franchises','Cat 15 — Investments'];
+
+// ── NAV ──
+function nav(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(s=>s.classList.remove('active'));
+  document.getElementById('pg-'+id).classList.add('active');
+  const sb=document.getElementById('sb-'+id);
+  if(sb)sb.classList.add('active');
+  if(id==='dashboard')buildDash();
+  if(id==='advisor'){
+    initChat();
+    buildScenarios();
+    buildRecsFromData();
+    // Inject dynamic chips
+    const chipsEl=document.getElementById('advisor-chips');
+    if(chipsEl) chipsEl.innerHTML=buildDynamicChips();
+  }
+}
+
+// ── UPLOAD ──
+function loadDemo(type){
+  const rows=type==='procurement'?DEMO_PROCUREMENT:DEMO_LOGISTICS;
+  document.getElementById('paste-input').value=rows.map(r=>`${r.desc}, ${r.qty}, ${r.supplier}, ${r.spend}`).join('\n');
+}
+
+function handleDrop(e){
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.remove('drag');
+  const file=e.dataTransfer.files[0];
+  if(file)processFile(file);
+}
+
+function handleFileSelect(e){
+  const file=e.target.files[0];
+  if(file)processFile(file);
+}
+
+function processFile(file){
+  const dz=document.getElementById('drop-zone');
+  dz.classList.add('has-file');
+  dz.innerHTML=`<div class="upload-icon" style="color:var(--green-mid)"><i class="ti ti-circle-check"></i></div><div class="upload-title">${file.name}</div><div class="upload-sub">${(file.size/1024).toFixed(1)} KB · Click to change</div>`;
+  document.getElementById('upload-status').innerHTML=`<span class="badge b-blue"><i class="ti ti-loader"></i> Reading file…</span>`;
+
+  const ext=file.name.split('.').pop().toLowerCase();
+
+  if(ext==='xlsx'||ext==='xls'){
+    // Use SheetJS to parse Excel properly
+    const reader=new FileReader();
+    reader.onload=function(e){
+      try{
+        const data=new Uint8Array(e.target.result);
+        const wb=XLSX.read(data,{type:'array'});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+        // Convert rows to readable text: header row + data rows
+        const lines=rows.filter(r=>r.some(c=>String(c).trim())).map(r=>r.map(c=>String(c).trim()).filter(c=>c).join(', '));
+        document.getElementById('paste-input').value=lines.slice(0,100).join('\n');
+        document.getElementById('upload-status').innerHTML=`<span class="badge b-green"><i class="ti ti-check"></i> Excel parsed: ${lines.length} rows found</span>`;
+      }catch(err){
+        document.getElementById('upload-status').innerHTML=`<span class="badge b-red"><i class="ti ti-alert-triangle"></i> Could not parse Excel file</span>`;
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  } else if(ext==='csv'||ext==='txt'){
+    const reader=new FileReader();
+    reader.onload=e=>{
+      document.getElementById('paste-input').value=e.target.result.substring(0,5000);
+      document.getElementById('upload-status').innerHTML=`<span class="badge b-green"><i class="ti ti-check"></i> File loaded: ${file.name}</span>`;
+    };
+    reader.readAsText(file);
+  } else if(ext==='pdf'){
+    // For PDF, show a message — browser can't parse PDF binary directly
+    document.getElementById('paste-input').value='';
+    document.getElementById('upload-status').innerHTML=`<span class="badge b-amber"><i class="ti ti-alert-triangle"></i> PDF detected — please copy and paste the text content from the PDF directly into the text area below</span>`;
+  } else {
+    const reader=new FileReader();
+    reader.onload=e=>{
+      document.getElementById('paste-input').value=e.target.result.substring(0,5000);
+      document.getElementById('upload-status').innerHTML=`<span class="badge b-green"><i class="ti ti-check"></i> File loaded: ${file.name}</span>`;
+    };
+    reader.readAsText(file);
+  }
+}
+
+async function processInput(){
+  const txt=document.getElementById('paste-input').value.trim();
+  if(!txt){alert('Please enter or upload data first.');return;}
+
+  document.getElementById('upload-status').innerHTML=`<span class="badge b-blue"><i class="ti ti-loader"></i> Extracting records with AI…</span>`;
+  document.querySelector('[onclick="processInput()"]').disabled=true;
+
+  const extractPrompt=`You are a data extraction engine for a Scope 3 emissions platform. The input may be free text, CSV rows, or Excel data converted to comma-separated lines. Extract every distinct line item (skip header rows, totals, blank lines) into a JSON array.
+
+For each item extract:
+- desc: clean item description (string)
+- supplier: supplier or vendor name if mentioned, else "—"
+- qty: quantity with number and unit if mentioned (e.g. "100 pcs", "45 kg"), else "—"
+- unit: unit of measure (pcs, kg, tonnes, litres, sqft, service, etc.)
+- spend: spend value with currency symbol if mentioned (e.g. "₹18,50,000"), else "—"
+- country: country of origin or "India" as default
+
+Return ONLY a valid JSON array, no markdown, no explanation, no preamble.
+Example: [{"desc":"Office Paper A4","supplier":"—","qty":"100 pcs","unit":"pcs","spend":"₹500","country":"India"}]
+
+Input data:
+${txt}`;
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:2000,
+        messages:[{role:'user',content:extractPrompt}]})});
+    const data=await res.json();
+    const raw=data.content?.find(b=>b.type==='text')?.text||'[]';
+    const clean=raw.replace(/```json|```/g,'').trim();
+    const rows=JSON.parse(clean);
+    state.rows=rows;
+    state.mappings=null; // reset mappings when new data loaded
+
+    const tbody=document.getElementById('extracted-tbody');
+    tbody.innerHTML=rows.map((r,i)=>`<tr>
+      <td style="color:var(--text2);font-weight:600">${i+1}</td>
+      <td style="font-weight:500">${r.desc}</td>
+      <td style="color:var(--blue)">${r.supplier}</td>
+      <td style="color:var(--blue)">${r.qty}</td>
+      <td>${r.unit}</td>
+      <td>${r.spend}</td>
+      <td>${r.country}</td>
+    </tr>`).join('');
+    document.getElementById('row-count').textContent=`${rows.length} records extracted`;
+    document.getElementById('extracted-preview').style.display='block';
+    document.getElementById('upload-status').innerHTML=`<span class="badge b-green"><i class="ti ti-check"></i> ${rows.length} records extracted successfully</span>`;
+    document.querySelector('.step-bar .step-item').classList.add('done');
+    document.querySelector('.step-bar .step-item').classList.remove('active-s');
+    document.getElementById('step2').classList.add('active-s');
+    document.getElementById('line2').classList.add('done');
+    state.uploaded=true;
+    document.getElementById('badge-upload').className='sb-badge green';
+    document.getElementById('badge-upload').textContent='✓';
+  }catch(err){
+    document.getElementById('upload-status').innerHTML=`<span class="badge b-red"><i class="ti ti-alert-triangle"></i> Extraction failed — check connection</span>`;
+  }
+  document.querySelector('[onclick="processInput()"]').disabled=false;
+}
+
+async function goToMapping(){
+  if(!state.uploaded){alert('Process data first.');return;}
+
+  document.getElementById('map-locked').style.display='none';
+  document.getElementById('map-content').style.display='block';
+  document.getElementById('map-tbody').innerHTML=`<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text2)"><i class="ti ti-loader" style="font-size:20px"></i><br>AI is classifying records against GHG Protocol categories…</td></tr>`;
+  nav('map');
+
+  const rows=state.rows;
+  // Limit to 50 rows per call to avoid token overflow
+  const rowsToMap=rows.slice(0,50);
+  if(rows.length>50){
+    document.getElementById('flag-summary').textContent=`Note: Only first 50 of ${rows.length} records classified in this batch.`;
+  }
+
+  const mapPrompt=`You are a GHG Protocol Scope 3 classification engine. Classify each record. Be concise — keep all string values short (under 80 chars each).
+
+For each item return these fields:
+- cat: GHG category (e.g. "Cat 1 — Purchased Goods & Services")
+- method: one of: "Supplier-specific" / "Hybrid" / "Average-data" / "Spend-based (EEIO)"
+- formula: short formula (e.g. "mass [kg] × EF [kgCO₂e/kg]")
+- ef: EF value and source (e.g. "1.85 kgCO₂e/kg · GHG Protocol DB")
+- tco2e: number
+- conf: integer 0-100
+- reason: max 15 words explaining classification
+- conf_issues: array of max 2 short strings (e.g. ["No weight provided","Ambiguous description"])
+- improve: array of max 2 short strings (e.g. ["Add weight in kg","Provide supplier name"])
+
+Return ONLY a valid JSON array. No markdown. No extra text.
+
+Records:
+${JSON.stringify(rowsToMap,null,2)}`;
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:8000,
+        messages:[{role:'user',content:mapPrompt}]})});
+    const data=await res.json();
+
+    // Surface API errors clearly
+    if(data.error){
+      document.getElementById('map-tbody').innerHTML=`<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--red)">
+        <strong>API Error: ${data.error.type}</strong><br>${data.error.message}
+      </td></tr>`;
+      return;
+    }
+
+    const raw=data.content?.find(b=>b.type==='text')?.text||'[]';
+    const clean=raw.replace(/```json|```/g,'').trim();
+
+    let mappings;
+    try{
+      mappings=JSON.parse(clean);
+    }catch(parseErr){
+      // Try to recover truncated JSON by extracting complete objects
+      try{
+        const partial=clean.replace(/,?\s*\{[^{}]*$/, '').replace(/,\s*$/, '');
+        const recovered=(partial.startsWith('[') ? partial : '['+partial) + ']';
+        mappings=JSON.parse(recovered);
+        document.getElementById('flag-summary').textContent=`⚠ Response was truncated — recovered ${mappings.length} of ${rowsToMap.length} records. Remaining rows will use fallback classification.`;
+        // Pad missing rows with fallback
+        while(mappings.length < rowsToMap.length){
+          mappings.push({cat:'Cat 1 — Purchased Goods & Services',method:'Spend-based (EEIO)',formula:'spend × EEIO EF',ef:'Exiobase 2021',tco2e:0,conf:50,reason:'Fallback — response truncated',conf_issues:['Response truncated'],improve:['Re-run mapping for this record']});
+        }
+      }catch(e2){
+        document.getElementById('map-tbody').innerHTML=`<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--red)">
+          <strong>JSON parse error</strong><br>The AI returned unexpected output. Raw response:<br>
+          <pre style="font-size:10px;text-align:left;margin-top:8px;max-height:120px;overflow:auto">${clean.substring(0,500)}</pre>
+        </td></tr>`;
+        return;
+      }
+    }
+    state.mappings=mappings;
+
+    const tbody=document.getElementById('map-tbody');
+    tbody.innerHTML=rowsToMap.map((r,i)=>{
+      const m=mappings[i]||{cat:'Cat 1 — Purchased Goods & Services',method:'Spend-based method',formula:'spend × EEIO EF',ef:'Exiobase 2021',tco2e:0,conf:60,reason:'Could not classify',conf_issues:[],improve:[]};
+      const low=m.conf<70;
+      const med=m.conf>=70&&m.conf<90;
+      const confCls=m.conf>=90?'c-hi':m.conf>=70?'c-md':'c-lo';
+      const catOpts=CAT_OPTS.map(c=>`<option ${c===m.cat?'selected':''}>${c}</option>`).join('');
+      const hasImprove=(m.improve||[]).length>0||(m.conf_issues||[]).length>0;
+
+      // Confidence tip column content
+      const confTipCell = m.conf>=90
+        ? `<span style="font-size:11px;color:var(--green);display:flex;align-items:center;gap:4px"><i class="ti ti-circle-check" style="font-size:12px"></i>High confidence — no action needed</span>`
+        : `<div>
+            <div style="font-size:11px;font-weight:500;color:${m.conf<70?'var(--red)':'var(--amber)'};margin-bottom:4px">
+              ${m.conf<70?'⚠ Required to proceed':'ℹ Recommended'}
+            </div>
+            ${(m.conf_issues||[]).length?`<div style="font-size:10px;color:var(--text2);margin-bottom:5px">
+              <strong>Why low:</strong> ${(m.conf_issues||[]).join(' · ')}
+            </div>`:''}
+            ${(m.improve||[]).length?`<div style="font-size:10px;color:var(--text)">
+              <strong>To improve:</strong>
+              ${(m.improve||[]).map((tip,j)=>`<div style="display:flex;align-items:flex-start;gap:5px;margin-top:3px">
+                <span style="min-width:14px;height:14px;border-radius:50%;background:var(--blue-bg);color:var(--blue);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0">${j+1}</span>
+                <span>${tip}</span>
+              </div>`).join('')}
+            </div>`:''}
+            ${m.method&&m.method.toLowerCase().includes('spend')?`<div style="margin-top:5px;padding:4px 8px;background:var(--amber-bg);border-radius:4px;font-size:10px;color:var(--amber)">
+              <i class="ti ti-arrow-up" style="font-size:10px"></i> Method upgrade available: provide physical qty to use average-data method
+            </div>`:''}
+          </div>`;
+
+      return `<tr class="${low?'map-row-flag':med?'map-row-med':''}">
+        <td style="color:var(--text2);font-weight:600">${i+1}</td>
+        <td>
+          <div style="font-size:12px;font-weight:500">${r.desc}</div>
+          <div style="font-size:11px;color:var(--text2)">${r.supplier} · ${r.qty}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;font-style:italic">${m.reason||''}</div>
+        </td>
+        <td><select class="map-select" onchange="updateMapping(${i},this.value)">${catOpts}</select></td>
+        <td style="font-size:11px;color:var(--text2)">${m.method}</td>
+        <td><span class="conf ${confCls}">${m.conf}%</span></td>
+        <td style="min-width:220px;max-width:280px">${confTipCell}</td>
+        <td>${low?`<span class="badge b-red"><i class="ti ti-alert-triangle"></i> Review</span>`:med?`<span class="badge b-amber"><i class="ti ti-info-circle"></i> Check</span>`:`<span class="badge b-green"><i class="ti ti-check"></i> OK</span>`}</td>
+      </tr>`;
+    }).join('');
+
+    const flagCount=mappings.filter(m=>m&&m.conf<70).length;
+    const medCount=mappings.filter(m=>m&&m.conf>=70&&m.conf<90).length;
+    document.getElementById('flag-summary').textContent=`${flagCount} record${flagCount!==1?'s':''} need review (<70% confidence) · ${medCount} record${medCount!==1?'s':''} can be improved (70–89%) · See the "How to improve" column for specific data to provide.`;
+    document.getElementById('badge-map').className='sb-badge green';
+    document.getElementById('badge-map').textContent='✓';
+  }catch(err){
+    document.getElementById('map-tbody').innerHTML=`<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--red)">
+      <strong>Connection error</strong><br>${err.message||err}<br>
+      <span style="font-size:11px;color:var(--text2)">Check that you are logged into Claude.ai and try again.</span>
+    </td></tr>`;
+  }
+}
+
+function updateMapping(i,val){
+  if(state.mappings&&state.mappings[i]) state.mappings[i].cat=val;
+}
+
+function toggleConfTip(i){
+  const row=document.getElementById('tip-row-'+i);
+  const chevron=document.getElementById('chevron-'+i);
+  if(!row)return;
+  const open=row.style.display!=='none';
+  row.style.display=open?'none':'table-row';
+  if(chevron) chevron.style.transform=open?'':'rotate(180deg)';
+}
+
+function goToCalc(){
+  const rows=state.rows;
+  const mappings=state.mappings||[];
+  const tbody=document.getElementById('calc-tbody');
+  let total=0,actBased=0;
+
+  tbody.innerHTML=rows.map((r,i)=>{
+    const m=mappings[i]||{cat:'Cat 1 — Purchased Goods & Services',method:'Spend-based method',formula:'spend × EEIO EF',ef:'Exiobase 2021',tco2e:0,conf:60};
+    total+=Number(m.tco2e)||0;
+    if(!m.method.toLowerCase().includes('spend'))actBased++;
+    const confCls=m.conf>=90?'c-hi':m.conf>=70?'c-md':'c-lo';
+    return `<tr>
+      <td style="color:var(--text2);font-weight:600">${i+1}</td>
+      <td style="font-size:12px;font-weight:500">${r.desc}</td>
+      <td><span class="badge b-blue" style="font-size:10px">${m.cat}</span></td>
+      <td style="font-size:11px;color:var(--text2)">${m.method}</td>
+      <td style="font-size:10px;font-family:monospace;color:var(--text2)">${m.formula}</td>
+      <td style="font-size:10px;color:var(--text2)">${m.ef}</td>
+      <td style="font-weight:600;color:var(--green-mid)">${(Number(m.tco2e)||0).toFixed(2)}</td>
+      <td><span class="conf ${confCls}">${m.conf}%</span></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('calc-kpis').innerHTML=`
+    <div class="kpi"><div class="kpi-lbl">Total calculated</div><div class="kpi-val">${total.toFixed(2)}</div><div class="kpi-ch ch-neu">tCO₂e</div></div>
+    <div class="kpi"><div class="kpi-lbl">Records</div><div class="kpi-val">${rows.length}</div><div class="kpi-ch ch-neu">line items</div></div>
+    <div class="kpi"><div class="kpi-lbl">Activity-based</div><div class="kpi-val">${rows.length?Math.round(actBased/rows.length*100):0}%</div><div class="kpi-ch ch-dn">Higher = better quality</div></div>
+    <div class="kpi"><div class="kpi-lbl">Avg confidence</div><div class="kpi-val">${rows.length?Math.round(mappings.reduce((s,m)=>s+(m.conf||0),0)/rows.length):0}%</div><div class="kpi-ch ch-neu">across all records</div></div>`;
+
+  state.totalTco2e=total;
+  state.actPct=rows.length?Math.round(actBased/rows.length*100):0;
+  state.calculated=true;
+
+  // Build dashboard data dynamically from actual mappings
+  const catTotals={};
+  const supTotals={};
+  rows.forEach((r,i)=>{
+    const m=mappings[i]||{};
+    const cat=(m.cat||'Unknown').split('—')[0].trim();
+    catTotals[cat]=(catTotals[cat]||0)+(Number(m.tco2e)||0);
+    const sup=r.supplier&&r.supplier!=='—'?r.supplier:r.desc;
+    supTotals[sup]=(supTotals[sup]||0)+(Number(m.tco2e)||0);
+  });
+  state.catTotals=catTotals;
+  state.supTotals=supTotals;
+
+  document.getElementById('calc-locked').style.display='none';
+  document.getElementById('calc-content').style.display='block';
+  document.getElementById('badge-calc').className='sb-badge green';
+  document.getElementById('badge-calc').textContent='✓';
+  document.getElementById('step2').classList.add('done');document.getElementById('step2').classList.remove('active-s');
+  document.getElementById('step3').classList.add('active-s');document.getElementById('line3').classList.add('done');
+  nav('calc');
+}
+
+function unlockResults(){
+  state.resultsUnlocked=true;
+  document.getElementById('step3').classList.add('done');document.getElementById('step3').classList.remove('active-s');
+  document.getElementById('step4').classList.add('active-s');
+  ['dash'].forEach(id=>{
+    const el=document.getElementById(id+'-locked');
+    if(el)el.style.display='none';
+  });
+  nav('dashboard');
+}
+
+// ── GHG PROTOCOL OFFICIAL CATEGORY NAMES ──
+const CAT_NAMES={
+  1:'Purchased Goods and Services',
+  2:'Capital Goods',
+  3:'Fuel- and Energy-Related Activities',
+  4:'Upstream Transportation and Distribution',
+  5:'Waste Generated in Operations',
+  6:'Business Travel',
+  7:'Employee Commuting',
+  8:'Upstream Leased Assets',
+  9:'Downstream Transportation and Distribution',
+  10:'Processing of Sold Products',
+  11:'Use of Sold Products',
+  12:'End-of-Life Treatment of Sold Products',
+  13:'Downstream Leased Assets',
+  14:'Franchises',
+  15:'Investments'
+};
+const UPSTREAM_CATS=[1,2,3,4,5,6,7,8];
+const DOWNSTREAM_CATS=[9,10,11,12,13,14,15];
+
+// Extract category number from a string like "Cat 1 — Purchased Goods..."
+function getCatNum(str){
+  const m=str.match(/cat\s*(\d+)/i);
+  return m?parseInt(m[1]):null;
+}
+// Return official GHG Protocol name for a category string
+function officialName(str){
+  const n=getCatNum(str);
+  return n&&CAT_NAMES[n]?CAT_NAMES[n]:(str.includes('—')?str.split('—').slice(1).join('—').trim():str.trim());
+}
+function isUpstream(str){
+  const n=getCatNum(str);
+  return n?UPSTREAM_CATS.includes(n):true;
+}
+
+// ── DASHBOARD ──
+let wfBuilt=false;
+function buildDash(){
+  if(!state.resultsUnlocked)return;
+  const total=state.totalTco2e||0;
+  document.getElementById('d-total').textContent=total.toFixed(2);
+  document.getElementById('d-records').textContent=state.rows.length||0;
+  document.getElementById('d-quality').textContent=(state.actPct||0)+'%';
+
+  const catTotals=state.catTotals||{};
+  const topCat=Object.entries(catTotals).sort((a,b)=>b[1]-a[1])[0];
+  if(topCat){
+    document.getElementById('d-top-cat').textContent=officialName(topCat[0]);
+    document.getElementById('d-top-pct').textContent=`${topCat[1].toFixed(2)} tCO₂e · ${total>0?Math.round(topCat[1]/total*100):0}%`;
+  }
+  document.getElementById('d-intensity').textContent=total>0?Math.round(total*180):'—';
+  document.getElementById('dash-content').style.display='block';
+
+  // Category bars — official GHG Protocol names
+  const catColors=['#1d9e75','#3b8bd4','#7f77dd','#ef9f27','#d85a30','#5dcaa5','#888780'];
+  const catEntries=Object.entries(catTotals).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const cmx=catEntries[0]?catEntries[0][1]:1;
+  document.getElementById('dash-cat-bars').innerHTML=catEntries.length
+    ?catEntries.map((c,i)=>{
+      const name=officialName(c[0]);
+      const num=getCatNum(c[0]);
+      return `<div class="bar-row" style="margin-bottom:11px">
+        <div style="font-size:11px;color:var(--text2);width:220px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${name}">${num?`<span style="font-size:10px;font-weight:600;color:var(--text3);margin-right:4px">Cat ${num}</span>`:''}${name}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${(c[1]/cmx*100).toFixed(0)}%;background:${catColors[i%catColors.length]}"></div></div>
+        <div class="bar-val">${c[1].toFixed(2)}</div>
+      </div>`;
+    }).join('')
+    :'<div style="color:var(--text2);font-size:12px">No category data yet</div>';
+
+  // Supplier bars
+  const supTotals=state.supTotals||{};
+  const supEntries=Object.entries(supTotals).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const smx=supEntries[0]?supEntries[0][1]:1;
+  document.getElementById('dash-sup-bars').innerHTML=supEntries.length
+    ?supEntries.map(s=>`<div class="bar-row"><div class="bar-lbl" title="${s[0]}">${s[0]}</div><div class="bar-track"><div class="bar-fill" style="width:${(s[1]/smx*100).toFixed(0)}%;background:#3b8bd4"></div></div><div class="bar-val">${s[1].toFixed(2)}</div></div>`).join('')
+    :'<div style="color:var(--text2);font-size:12px">No supplier data yet</div>';
+
+  if(!wfBuilt){buildWF();wfBuilt=true;}
+}
+
+function buildWF(){
+  const catTotals=state.catTotals||{};
+  const entries=Object.entries(catTotals).sort((a,b)=>b[1]-a[1]).slice(0,8);
+
+  // Use official name, truncated for chart axis
+  const labels=entries.map(e=>{
+    const name=officialName(e[0]);
+    return name.length>20?name.substring(0,18)+'…':name;
+  });
+  const vals=entries.map(e=>parseFloat(e[1].toFixed(2)));
+  // Colour by upstream (blue) vs downstream (purple)
+  const colors=entries.map(e=>isUpstream(e[0])?'#3b8bd4':'#7f77dd');
+
+  const ctx=document.getElementById('wfChart').getContext('2d');
+  new Chart(ctx,{type:'bar',
+    data:{labels:labels.length?labels:['No data'],
+      datasets:[{data:vals.length?vals:[0],backgroundColor:colors}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{
+          label:c=>`${c.raw} tCO₂e`,
+          title:t=>entries[t[0].dataIndex]?officialName(entries[t[0].dataIndex][0]):t[0].label
+        }}
+      },
+      scales:{
+        x:{ticks:{font:{size:10},maxRotation:40}},
+        y:{ticks:{callback:v=>v+'t',font:{size:10}},grid:{color:'rgba(0,0,0,.05)'}}
+      }
+    }
+  });
+
+  // Inject legend below chart
+  const legendEl=document.getElementById('wf-legend');
+  if(legendEl) legendEl.innerHTML=`
+    <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)">
+      <span style="width:12px;height:12px;border-radius:2px;background:#3b8bd4;display:inline-block"></span>Upstream (Cat 1–8)
+    </span>
+    <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)">
+      <span style="width:12px;height:12px;border-radius:2px;background:#7f77dd;display:inline-block"></span>Downstream (Cat 9–15)
+    </span>`;
+}
+
+// ── SCENARIOS ──
+function buildScenarios(){
+  // Generate dynamic scenarios from actual category data
+  const catTotals=state.catTotals||{};
+  const rows=state.rows||[];
+  const mappings=state.mappings||[];
+  const total=state.totalTco2e||0;
+  const dynScens=[];
+
+  Object.entries(catTotals).sort((a,b)=>b[1]-a[1]).slice(0,4).forEach(([cat,val],i)=>{
+    if(cat.includes('Cat 1')){
+      dynScens.push({id:'ds1',title:`Switch to lower-EF alternatives in ${cat.split('—')[0].trim()}`,desc:'Request supplier PCFs or substitute with low-carbon materials',delta:-(val*0.35),pct:35});
+    } else if(cat.includes('Cat 4')){
+      dynScens.push({id:'ds2',title:`Modal shift for ${cat.split('—')[0].trim()}`,desc:'Switch air freight to ocean/road where feasible',delta:-(val*0.60),pct:60});
+    } else if(cat.includes('Cat 6')){
+      dynScens.push({id:'ds3',title:`Video-first policy for ${cat.split('—')[0].trim()}`,desc:'Replace 40% of business trips with virtual meetings',delta:-(val*0.40),pct:40});
+    } else if(cat.includes('Cat 5')){
+      dynScens.push({id:'ds4',title:`Zero-waste programme for ${cat.split('—')[0].trim()}`,desc:'Divert landfill waste to recycling/composting',delta:-(val*0.70),pct:70});
+    } else {
+      dynScens.push({id:`ds${i}`,title:`Reduce emissions in ${cat.split('—')[0].trim()}`,desc:'Engage suppliers for primary data and lower-EF alternatives',delta:-(val*0.20),pct:20});
+    }
+  });
+
+  if(!dynScens.length){
+    document.getElementById('scen-list').innerHTML='<div style="font-size:12px;color:var(--text2)">Complete Steps 1–3 to model scenarios from your data.</div>';
+    return;
+  }
+
+  document.getElementById('scen-list').innerHTML=dynScens.map(s=>`
+    <div class="scen-card ${state.selectedScens.has(s.id)?'sel':''}" onclick="toggleScen('${s.id}',${Math.abs(s.delta).toFixed(2)})">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
+        <div style="font-size:12px;font-weight:600;max-width:75%">${s.title}</div>
+        <div style="font-size:12px;font-weight:600;color:var(--green-mid)">−${Math.abs(s.delta).toFixed(2)} tCO₂e</div>
+      </div>
+      <div style="font-size:11px;color:var(--text2)">${s.desc} · ~${s.pct}% reduction lever</div>
+    </div>`).join('');
+  updateScenResult();
+}
+
+function toggleScen(id,delta){
+  if(state.selectedScens.has(id))state.selectedScens.delete(id);
+  else state.selectedScens.set(id,delta);
+  buildScenarios();
+}
+function updateScenResult(){
+  const el=document.getElementById('scen-result');
+  if(!state.selectedScens.size){el.innerHTML='<span style="font-size:12px;color:var(--text2)">Select scenarios above to model combined impact.</span>';return;}
+  let totalDelta=0;
+  state.selectedScens.forEach(v=>totalDelta+=v);
+  const base=state.totalTco2e||1;
+  el.innerHTML=`<div style="background:var(--green-bg);border-radius:var(--radius);padding:10px 12px">
+    <div style="font-size:11px;color:var(--green)">Combined reduction (${state.selectedScens.size} scenario${state.selectedScens.size>1?'s':''})</div>
+    <div style="font-size:20px;font-weight:600;color:var(--green)">−${totalDelta.toFixed(2)} tCO₂e</div>
+    <div style="font-size:11px;color:var(--green)">${(totalDelta/base*100).toFixed(1)}% of your total Scope 3</div>
+  </div>`;
+}
+
+// ── AI ADVISOR ──
+function buildInventorySummary(){
+  const rows=state.rows||[];
+  const mappings=state.mappings||[];
+  const catTotals=state.catTotals||{};
+  const supTotals=state.supTotals||{};
+  const total=state.totalTco2e||0;
+
+  if(!rows.length) return 'No data uploaded yet.';
+
+  const topCats=Object.entries(catTotals).sort((a,b)=>b[1]-a[1]).slice(0,5)
+    .map(([c,v])=>`${c}: ${v.toFixed(2)} tCO₂e`).join('; ');
+  const topSups=Object.entries(supTotals).sort((a,b)=>b[1]-a[1]).slice(0,5)
+    .map(([s,v])=>`${s}: ${v.toFixed(2)} tCO₂e`).join('; ');
+  const spendBased=mappings.filter(m=>m&&(m.method||'').toLowerCase().includes('spend')).length;
+  const actBased=mappings.length-spendBased;
+
+  const itemList=rows.map((r,i)=>{
+    const m=mappings[i]||{};
+    return `• ${r.desc} (${r.qty||'—'}, ${r.supplier||'—'}) → ${m.cat||'unclassified'} | ${m.method||'—'} | ${(Number(m.tco2e)||0).toFixed(2)} tCO₂e | conf: ${m.conf||'—'}%`;
+  }).join('\n');
+
+  return `UPLOADED INVENTORY (${rows.length} records, total ${total.toFixed(2)} tCO₂e):
+${itemList}
+
+TOP CATEGORIES: ${topCats||'none'}
+TOP SUPPLIERS/SOURCES: ${topSups||'none'}
+DATA QUALITY: ${actBased} activity-based, ${spendBased} spend-based (EEIO fallback)`;
+}
+
+function buildDynamicSysPrompt(){
+  return `You are an expert AI Carbon Advisor for a Scope 3 Emissions Intelligence Platform, grounded in the GHG Protocol Corporate Value Chain (Scope 3) Accounting and Reporting Standard and its Technical Guidance for Calculating Scope 3 Emissions.
+
+CURRENT USER INVENTORY:
+${buildInventorySummary()}
+
+GHG Protocol method hierarchy for Cat 1 (Fig 1.2 decision tree):
+1. Supplier-specific: qty × supplier PCF (cradle-to-gate) — highest specificity
+2. Hybrid: supplier S1+S2 + secondary EFs for materials/transport/waste
+3. Average-data: mass × industry EF (kgCO₂e/kg) — use when physical qty known
+4. Spend-based EEIO: spend × EEIO EF — last resort only
+
+EF sources used: DEFRA 2023 (transport/waste/travel), GHG Protocol EF DB (materials), Exiobase 2021 (EEIO), IEA 2023 (India grid), IPCC AR6 GWP100.
+
+IMPORTANT: Base ALL your advice, reduction recommendations, and hotspot analysis on the actual uploaded inventory above. Do not mention steel, aluminium, or any items not in the inventory. Reference specific line items, suppliers, categories, and tCO₂e values from the data. Be concise and practical.`;
+}
+
+function buildDynamicChips(){
+  const rows=state.rows||[];
+  const catTotals=state.catTotals||{};
+  const topCats=Object.entries(catTotals).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([c])=>c);
+  const topItems=rows.slice(0,3).map(r=>r.desc);
+
+  const chips=[
+    {label:'Top hotspot',q:`What is the biggest emissions hotspot in my uploaded data and how can I reduce it? Reference specific items and tCO₂e values.`},
+    {label:'Data quality',q:`Which records in my inventory are using spend-based (EEIO) methods and how can I upgrade them to activity-based methods per GHG Protocol guidance?`},
+    {label:'Quick wins',q:`What are the 3 quickest emission reduction actions I can take based on my uploaded data? Be specific to my items.`},
+    {label:'Supplier engagement',q:`Which suppliers in my inventory should I prioritise for GHG data collection and why? Reference the GHG Protocol supplier engagement approach.`},
+  ];
+
+  if(topCats[0]) chips.push({label:`Reduce ${topCats[0].split('—')[0].trim()}`,q:`How can I reduce emissions from ${topCats[0]} in my inventory? What method upgrade or procurement action would have the most impact?`});
+
+  return chips.map(c=>`<div class="chip" onclick="askQ('${c.q.replace(/'/g,"\\'")}') ">${c.label}</div>`).join('');
+}
+
+async function buildRecsFromData(){
+  const rows=state.rows||[];
+  const mappings=state.mappings||[];
+  const catTotals=state.catTotals||{};
+  const el=document.getElementById('recs-list');
+
+  if(!rows.length||!mappings.length){
+    el.innerHTML='<div style="font-size:12px;color:var(--text2);padding:12px 0">Upload and calculate data to see recommendations based on your inventory.</div>';
+    return;
+  }
+
+  el.innerHTML=`<div style="font-size:12px;color:var(--text2);padding:8px 0"><span class="dots"><span>●</span><span>●</span><span>●</span></span> Generating recommendations from your data…</div>`;
+
+  const recPrompt=`You are a GHG Protocol Scope 3 carbon advisor. Based on the inventory below, generate exactly 4 specific, actionable reduction recommendations. Each must reference actual items, suppliers, or categories from the data.
+
+Inventory:
+${buildInventorySummary()}
+
+Return ONLY a JSON array of 4 objects, no markdown:
+[{"title":"specific action title","detail":"one sentence with specific item/category/tCO2e reference","category":"GHG cat e.g. Cat 1","icon":"leaf|truck|solar-panel|recycle|target|bolt","saving":"estimated % or tCO2e saving"}]`;
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:800,
+        messages:[{role:'user',content:recPrompt}]})});
+    const data=await res.json();
+    const raw=data.content?.find(b=>b.type==='text')?.text||'[]';
+    const recs=JSON.parse(raw.replace(/```json|```/g,'').trim());
+
+    const iconMap={'leaf':'ti-leaf','truck':'ti-truck','solar-panel':'ti-solar-panel','recycle':'ti-recycle','target':'ti-target','bolt':'ti-bolt'};
+    const bgMap={'leaf':'var(--green-bg)','truck':'var(--blue-bg)','solar-panel':'var(--amber-bg)','recycle':'var(--green-bg)','target':'#eeedfe','bolt':'var(--amber-bg)'};
+    const colMap={'leaf':'var(--green)','truck':'var(--blue)','solar-panel':'var(--amber)','recycle':'var(--green)','target':'var(--purple)','bolt':'var(--amber)'};
+
+    el.innerHTML=recs.map((r,i)=>{
+      const ico=iconMap[r.icon]||'ti-bulb';
+      const bg=bgMap[r.icon]||'var(--surface2)';
+      const col=colMap[r.icon]||'var(--text2)';
+      const border=i<recs.length-1?`border-bottom:1px solid var(--border)`:'';
+      return `<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;${border}">
+        <div style="width:32px;height:32px;border-radius:8px;background:${bg};display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ${ico}" style="color:${col};font-size:15px"></i></div>
+        <div>
+          <div style="font-size:12px;font-weight:600">${r.title}</div>
+          <div style="font-size:11px;color:var(--text2)">${r.category} · ${r.detail}</div>
+          ${r.saving?`<span class="badge b-green" style="margin-top:4px;font-size:10px">Est. saving: ${r.saving}</span>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){
+    el.innerHTML='<div style="font-size:12px;color:var(--text2)">Could not generate recommendations — check connection.</div>';
+  }
+}
+
+let chatHist=[];
+
+function initChat(){
+  const hasData=state.rows&&state.rows.length>0;
+  const greeting=hasData
+    ?`Hello! I can see you've uploaded ${state.rows.length} records totalling ${(state.totalTco2e||0).toFixed(2)} tCO₂e. I'm ready to advise on your specific inventory — ask me about hotspots, reduction opportunities, or methodology for any of your items.`
+    :`Hello! I'm your AI Carbon Advisor, grounded in the GHG Protocol Technical Guidance for Scope 3 Emissions.\n\nUpload your data in Step 1 first, then I can give specific advice on your inventory — hotspots, reduction actions, method upgrades, and supplier engagement.`;
+
+  chatHist=[
+    {role:'user',content:'[session start]'},
+    {role:'assistant',content:greeting}
+  ];
+
+  const wrap=document.getElementById('chat-wrap');
+  wrap.innerHTML=`<div class="msg ai">${greeting.replace(/\n/g,'<br>')}</div>`;
+}
+
+function askQ(q){document.getElementById('advisor-q').value=q;sendMsg();}
+
+async function sendMsg(){
+  const ta=document.getElementById('advisor-q');
+  const q=ta.value.trim();if(!q)return;ta.value='';
+  const wrap=document.getElementById('chat-wrap');
+  appendMsg('user',q,wrap);
+  const tid='t'+Date.now();
+  wrap.innerHTML+=`<div class="msg ai typing" id="${tid}"><span class="dots"><span>●</span><span>●</span><span>●</span></span></div>`;
+  wrap.scrollTop=wrap.scrollHeight;
+  chatHist.push({role:'user',content:q});
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,
+        system:buildDynamicSysPrompt(),
+        messages:chatHist.slice(-10)})});
+    const data=await res.json();
+    const reply=data.content?.find(b=>b.type==='text')?.text||'Unable to generate response.';
+    chatHist.push({role:'assistant',content:reply});
+    document.getElementById(tid)?.remove();
+    appendMsg('ai',reply,wrap);
+  }catch(e){
+    document.getElementById(tid)?.remove();
+    appendMsg('ai','Connection error. Please try again.',wrap);
+  }
+}
+
+function appendMsg(role,text,wrap){
+  const d=document.createElement('div');
+  d.className=`msg ${role}`;
+  d.innerHTML=text.replace(/\n/g,'<br>');
+  wrap.appendChild(d);
+  wrap.scrollTop=wrap.scrollHeight;
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!e.shiftKey&&document.activeElement===document.getElementById('advisor-q')){e.preventDefault();sendMsg();}
+});
+
+// ── EF MODAL ──
+function openEFModal(){document.getElementById('ef-modal').classList.add('open');}
+function closeEFModal(){document.getElementById('ef-modal').classList.remove('open');}
+document.getElementById('ef-modal').addEventListener('click',function(e){if(e.target===this)closeEFModal();});
+
+// ── POP OUT ──
+function popOut(){
+  const html=document.documentElement.outerHTML;
+  const blob=new Blob([html],{type:'text/html'});
+  window.open(URL.createObjectURL(blob),'_blank','width=1280,height=800');
+}
+</script>
+</body>
+</html>
